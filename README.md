@@ -14,7 +14,16 @@ El proceso de entrenamiento de un árbol de decisión implica dividir repetidame
 ## Ejecución del Archivo Python
 A continuación se muestra un ejemplo de cómo correr el archivo Python que utiliza un árbol de decisión para determinar la nacionalidad de un carro.
 
-* **Instalación** de Dependencias: Asegúrate de tener instaladas las bibliotecas necesarias, como scikit-learn, que proporciona implementaciones de árboles de decisión y herramientas para el aprendizaje automático en Python. Para instalar scikit-learn, ejecuta el siguiente comando en la terminal:
+* **Instalación** de Dependencias: Para instalar las dependencias necesarias, ejecuta los siguientes comandos en la terminal:
+
+
+```
+pip install numpy
+```
+
+```
+pip install pandas
+```
 
 ```
 pip install -U scikit-learn
