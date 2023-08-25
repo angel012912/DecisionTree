@@ -1,5 +1,10 @@
-# Árboles de Decisión
-Los árboles de decisión son un tipo de algoritmo de aprendizaje automático utilizado en tareas de clasificación y regresión. En este contexto, se emplean para determinar la nacionalidad de un carro basándose en ciertas características o atributos del vehículo. Estos algoritmos son especialmente útiles cuando se busca comprender cómo se toman decisiones en un proceso de clasificación.
+# Momento de Retroalimentación: Módulo 2 Implementación de una técnica de aprendizaje máquina sin el uso de un framework. (Portafolio Implementación)
+
+## Autor
+* Nombre: José Ángel García Gómez
+* Matrícula: A01745865
+* Carrera: Ingeniería en Tecnologías Computacionales
+* Escuela: Tec de Monterrey, campus Estado de México
 
 ## Descripción
 Un árbol de decisión es una estructura jerárquica en forma de árbol compuesta por nodos. Cada nodo interno representa una decisión basada en un atributo específico, mientras que las hojas del árbol representan las clases o etiquetas en las que se clasifican los datos. En este caso, las clases podrían ser las diferentes nacionalidades de los carros, como "estadounidense", "japonés" o "europeo".
