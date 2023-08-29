@@ -302,17 +302,23 @@ if __name__ == '__main__':
     X = df.drop('brand', axis=1)
     Y = df['brand']
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+    # Se genera un árbol de decisión que se entrena con un data frame de entraniento random para poder identificar que el árbol generaliza y no se sobreajusta
+    for _ in range(10):
+      
+      # Se obtiene un numero random del 1 al 100 para dividir el data set
+      random_state = np.random.randint(1, 100)
 
-    # El data frame de entrenamiento se vuelve a dividir entre entrenamiento y validación
-    X_train, X_validation, Y_train, Y_validation = train_test_split(X_train, Y_train, test_size=0.2, random_state=42)
+      X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=random_state)
 
-    # Se definen los hiperparámetros
-    max_depth = 10
-    min_samples_split = 5
-    min_information_gain  = 1e-5
-    Data_train = pd.concat([X_train, Y_train], axis=1) # Se unen las variables predictoras y la variable objetivo en un solo data frame
+      # El data frame de entrenamiento se vuelve a dividir entre entrenamiento y validación
+      X_train, X_validation, Y_train, Y_validation = train_test_split(X_train, Y_train, test_size=0.2, random_state=random_state)
 
-    arbol = generar_arbol(Data_train, 'brand', True, max_depth, min_samples_split, min_information_gain) # Se entrena el árbol de decisión
-    precision = get_precision(X_validation, Y_validation, X_test, Y_test, arbol) # Se obtiene la precisión del árbol de decisión
-    print('La precisión del árbol de decisión es: ' + str(precision)) # Se imprime la precisión del árbol de decisión
+      # Se definen los hiperparámetros
+      max_depth = 10
+      min_samples_split = 5
+      min_information_gain  = 1e-5
+      Data_train = pd.concat([X_train, Y_train], axis=1) # Se unen las variables predictoras y la variable objetivo en un solo data frame
+
+      arbol = generar_arbol(Data_train, 'brand', True, max_depth, min_samples_split, min_information_gain) # Se entrena el árbol de decisión
+      precision = get_precision(X_validation, Y_validation, X_test, Y_test, arbol) # Se obtiene la precisión del árbol de decisión
+      print('La precisión del árbol de decisión es: ' + str(precision)) # Se imprime la precisión del árbol de decisión
