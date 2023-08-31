@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
-from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 import itertools
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Se define la funcion de cost loss para identificar la puresa de una serie de datos categóricos.
 def func_entropia(serie_categorica: pd.Series) -> float:
@@ -272,24 +274,6 @@ def get_y_pred_series(dataset: pd.DataFrame, arbol: dict) -> pd.Series:
         predicciones.append(clasificar_datos(dataset.iloc[index], arbol))
     return(pd.Series(predicciones))
 
-# Se define la función para obtener la precisión de un árbol de decisión
-def get_precision(X_validation: pd.DataFrame, Y_validation: pd.Series, X_test: pd.DataFrame, Y_test: pd.Series, arbol: dict) -> float:
-    '''
-    Dado un data set y un árbol de decisión, retorna la precisión del árbol.
-    X_validation: Data set con las variables predictoras de validación.
-    Y_validation: Serie de pandas con la variable objetivo de validación.
-    X_test: Data set con las variables predictoras de test.
-    Y_test: Serie de pandas con la variable objetivo de test.
-    arbol: Árbol de decisión.
-    '''
-    
-    Y_Pred_test = get_y_pred_series(X_test, arbol)
-    Y_Pred_validation = get_y_pred_series(X_validation, arbol)
-    precision_test = accuracy_score(Y_test, Y_Pred_test)
-    precision_validation = accuracy_score(Y_validation, Y_Pred_validation)
-    mean_precision = (precision_test + precision_validation)/2
-    return mean_precision
-
 if __name__ == '__main__':
     # Leer el archivo de datos
     col_names = ['mpg', 'cylinders', 'cubicinches', 'hp', 'weightlbs', 'time-to-60', 'year', 'brand']
@@ -301,24 +285,62 @@ if __name__ == '__main__':
     # Se obtienen los data frames de entrenamiento y de test
     X = df.drop('brand', axis=1)
     Y = df['brand']
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 
-    # Se genera un árbol de decisión que se entrena con un data frame de entraniento random para poder identificar que el árbol generaliza y no se sobreajusta
+    # Se definen los hiperparámetros
+    max_depth = 10
+    min_samples_split = 5
+    min_information_gain  = 1e-5
+
+    # Se genera una lista de precisiones para iteraciones con diferentes random states
+    accuracy_list = []
+
+    # Se crea un gráfico para mostrar las matrices de confusión
+    fig_conf_mtrx, axes_conf_mtrx = plt.subplots(2, 5, figsize=(10, 8))
+
+    # Se genera un árbol de decisión que se entrena con un data frame de validación random para poder identificar que el árbol generaliza y no se sobreajusta
     for _ in range(10):
-      
       # Se obtiene un numero random del 1 al 100 para dividir el data set
-      random_state = np.random.randint(1, 100)
-
-      X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=random_state)
+      random_state = np.random.randint(20, 100)
 
       # El data frame de entrenamiento se vuelve a dividir entre entrenamiento y validación
       X_train, X_validation, Y_train, Y_validation = train_test_split(X_train, Y_train, test_size=0.2, random_state=random_state)
 
-      # Se definen los hiperparámetros
-      max_depth = 10
-      min_samples_split = 5
-      min_information_gain  = 1e-5
+      # Se unen las variables predictoras y la variable objetivo en un solo data frame
       Data_train = pd.concat([X_train, Y_train], axis=1) # Se unen las variables predictoras y la variable objetivo en un solo data frame
 
+      # Se entrena el árbol de decisión
       arbol = generar_arbol(Data_train, 'brand', True, max_depth, min_samples_split, min_information_gain) # Se entrena el árbol de decisión
-      precision = get_precision(X_validation, Y_validation, X_test, Y_test, arbol) # Se obtiene la precisión del árbol de decisión
-      print('La precisión del árbol de decisión es: ' + str(precision)) # Se imprime la precisión del árbol de decisión
+      
+      # Se obtiene la precisión del árbol de decisión con el data frame de validación
+      Y_Pred_validation = get_y_pred_series(X_validation, arbol)
+
+      print("*** Arbol de decisión generado con el random state: " + str(random_state) + " ***")
+      report = classification_report(Y_validation, Y_Pred_validation) # Se genera un reporte de clasificación con el data frame de validación
+      print(report) # Se imprime el reporte de clasificación
+      print("*****************************************************************************************")
+
+      # Se genera una matriz de confusión con el data frame de validación
+      confusion_matrix_df = confusion_matrix(Y_validation, Y_Pred_validation)
+      # Se crea un gráfico para mostrar las matrices de confusión
+      sns.heatmap(confusion_matrix_df, annot=True, fmt="d", cmap="Blues", cbar=False, xticklabels=[0, 1, 2], yticklabels=[0, 1, 2], ax=axes_conf_mtrx[_//5, _%5])
+      axes_conf_mtrx[_//5, _%5].set_title("Random state: " + str(random_state))
+
+      # Se obtiene la precisión del árbol de decisión con el data frame de test
+      acc = accuracy_score(Y_validation, Y_Pred_validation)
+      accuracy_list.append(acc)
+
+    # Se muestra los gráficos de las matrices de confusión
+    plt.tight_layout()
+    plt.show()
+
+    # Se genera un gráfico para mostrar la precisión del árbol de decisión con diferentes random states
+    plt.plot(accuracy_list, 'o-', label="Precisión con el data frame de validación")
+    plt.title("Precisión del árbol de decisión con diferentes random states")
+    plt.ylabel("Precisión")
+    # Se realiza la prueba con el data frame de test para verificar que el árbol generaliza y no se sobreajusta
+    Y_Pred_test = get_y_pred_series(X_test, arbol)
+    test_precision = accuracy_score(Y_test, Y_Pred_test)
+    print("Precisión con el data frame de test: " + str(test_precision))
+    plt.plot(test_precision, 'ro', label="Precisión con el data frame de test")
+    plt.show()
